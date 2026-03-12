@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Grades Sheet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: black;
+            padding: 20px;
+        }
+
+        /* Centered Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #4169E1;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        input {
+            padding: 6px;
+            margin: 5px;
+            width: 120px;
+        }
+
+        button {
+            padding: 6px 12px;
+            margin: 5px;
+            background: lightblue  
+            color: black;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: black;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #4169E1;
+            text-align: center;
+        }
+
+        th {
+            background: #ADD8E6;
+            color: white;
+            h2 { color: #4169E1; } 
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header without logos -->
+<div class="header">
+    <h1>Student Grades Sheet</h1>
+    <h2>PASSI CITY COLLEGE</h2>
+    <h3>Bachelor of Science in Information Technology</3>
+    <h4>2ND YEAR, 2ND SEM GRADESHEETS</4>
+</div>
+
+<div class="container">
+
+    <!-- Hidden field for editing -->
+    <input type="hidden" id="studentId">
+
+    <!-- Input Fields -->
+    <input type="text" id="name" placeholder="Student Name">
+    <input type="number" id="ipt201" placeholder="IPT 201">
+    <input type="number" id="pt201" placeholder="PT 201">
+    <input type="number" id="net201" placeholder="NET 201">
+    <input type="number" id="it206" placeholder="IT 206">
+    <input type="number" id="ge5" placeholder="GE 5">
+
+    <button onclick="saveStudent()">Save Student</button>
+
+    <!-- Student Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>IPT 201</th></th>
+                <th>PT201</th>
+                <th>NET 201</th>
+                <th>IT 206</th>
+                <th>GE 5</th>
+                <th>Average</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+</div>
+
+<script>
+let students = JSON.parse(localStorage.getItem("students")) || [];
+
+function saveToStorage() {
+    localStorage.setItem("students", JSON.stringify(students));
+}
+
+function calculateAverage(s1, s2, s3, s4, s5) {
+    return ((s1 + s2 + s3 + s4 + s5) / 5).toFixed(2);
+}
+
+function saveStudent() {
+    const idField = document.getElementById("studentId").value;
+    const name = document.getElementById("name").value.trim();
+    const s1 = parseFloat(document.getElementById("ipt201").value);
+    const s2 = parseFloat(document.getElementById("pt201").value);
+    const s3 = parseFloat(document.getElementById("net201").value);
+    const s4 = parseFloat(document.getElementById("it206").value);
+    const s5 = parseFloat(document.getElementById("ge5").value);
+
+    if (!name || isNaN(s1) || isNaN(s2) || isNaN(s3) || isNaN(s4) || isNaN(s5)) {
+        alert("Please complete all fields.");
+        return;
+    }
+
+    const average = calculateAverage(s1, s2, s3, s4, s5);
+
+    if (idField) {
+        const index = students.findIndex(s => s.id == idField);
+        students[index] = { id: idField, name, s1, s2, s3, s4, s5, average };
+    } else {
+        const newStudent = {
+            id: Date.now(),
+            name,
+            s1,
+            s2,
+            s3,
+            s4,
+            s5,
+            average
+        };
+        students.push(newStudent);
+    }
+
+    saveToStorage();
+    renderTable();
+    clearFields();
+}
+
+function renderTable() {
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = "";
+
+    students.forEach(student => {
+        tableBody.innerHTML += `
+            <tr>
+                <td>${student.name}</td>
+                <td>${student.s1}</td>
+                <td>${student.s2}</td>
+                <td>${student.s3}</td>
+                <td>${student.s4}</td>
+                <td>${student.s5}</td>
+                <td>${student.average}</td>
+                <td>
+                    <button onclick="editStudent(${student.id})">Edit</button>
+                    <button onclick="deleteStudent(${student.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function editStudent(id) {
+    const student = students.find(s => s.id == id);
+    document.getElementById("studentId").value = student.id;
+    document.getElementById("name").value = student.name;
+    document.getElementById("ias302").value = student.s1;
+    document.getElementById("sa301").value = student.s2;
+    document.getElementById("itelec3").value = student.s3;
+    document.getElementById("itelec4").value = student.s4;
+    document.getElementById("cap301").value = student.s5;
+}
+
+function deleteStudent(id) {
+    if (confirm("Are you sure you want to delete this student?")) {
+        students = students.filter(student => student.id != id);
+        saveToStorage();
+        renderTable();
+    }
+}
+
+function clearFields() {
+    document.getElementById("studentId").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("ipt201").value = "";
+    document.getElementById("pt201").value = "";
+    document.getElementById("net201").value = "";
+    document.getElementById("it206").value = "";
+    document.getElementById("ge5").value = "";
+}
+
+renderTable();
+</script>
+
+</body>
+</html>
